@@ -54,7 +54,15 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - run: npm audit --audit-level=high
+
+      # What ships is what matters. Every dependency here is a build tool that
+      # never reaches a user's machine, so a problem in electron-builder's tree
+      # is worth knowing about without blocking a release.
+      - name: Audit what ships
+        run: npm audit --audit-level=high --omit=dev
+
+      - name: Audit the build tools, for information
+        run: npm audit --audit-level=high || true
 
       # The whole security pitch rests on this staying at zero. Fail loudly if a
       # runtime dependency ever appears in the core package.

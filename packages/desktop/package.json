@@ -53,7 +53,8 @@
           ]
         }
       ],
-      "icon": "build/icon.ico"
+      "icon": "build/icon.ico",
+      "artifactName": "SteamDesktopAuthenticator-${version}-win-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -108,9 +109,6 @@
     "portable": {
       "artifactName": "SteamDesktopAuthenticator-${version}-portable.${ext}",
       "unicode": true
-    },
-    "zip": {
-      "artifactName": "SteamDesktopAuthenticator-${version}-win-x64.${ext}"
     }
   },
   "repository": {

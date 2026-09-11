@@ -4,74 +4,17 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:
-    inputs:
-      tag:
-        description: Tag to release
-        required: true
 
 permissions:
   contents: read
 
 jobs:
-  publish:
-    name: Publish to npm with provenance
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      # Lets npm attest that this build produced this package, tying the
-      # published tarball to this commit and this workflow run.
-      id-token: write
-
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
-        with:
-          node-version: '22'
-          registry-url: https://registry.npmjs.org
-          cache: npm
-
-      - run: npm ci
-
-      - name: Build
-        run: npm run build -w @sda/core && npm run build -w @sda/ui && npm run build -w @sda/cli
-
-      - name: Test
-        run: npm test
-
-      - name: Write SHA256SUMS into each package
-        run: node scripts/write-checksums.mjs
-
-      - name: Publish @sda/core
-        run: npm publish --provenance --access public -w @sda/core
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @sda/ui
-        run: npm publish --provenance --access public -w @sda/ui
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @sda/cli
-        run: npm publish --provenance --access public -w @sda/cli
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Collect checksums for the release notes
-        run: |
-          cat packages/*/SHA256SUMS > SHA256SUMS
-          echo "Published from ${{ github.sha }}" >> SHA256SUMS
-
-      - name: Attach checksums to the GitHub release
-        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
-        with:
-          files: SHA256SUMS
-          generate_release_notes: true
-
+  # Installers first, and on their own. Publishing to npm needs a token that a
+  # fork or a fresh clone will not have, and a missing token should never stop
+  # people getting a download.
   desktop:
-    name: Desktop build (${{ matrix.os }})
+    name: Build ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    needs: publish
     permissions:
       contents: write
     strategy:
@@ -80,26 +23,87 @@ jobs:
         os: [windows-latest, macos-latest, ubuntu-latest]
 
     steps:
+      # Actions are pinned by commit SHA. A tag can be moved to point at other
+      # code; a SHA cannot.
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: '22'
           cache: npm
 
       - run: npm ci
-      - run: npm run build
+
+      - name: Build the packages
+        run: npm run build
+
+      - name: Test
+        run: npm test
 
       - name: Package the desktop app
         run: npm run package -w @sda/desktop
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # No signing certificate, so do not go looking for one.
+          CSC_IDENTITY_AUTO_DISCOVERY: false
 
-      - name: Attach installers to the release
+      - name: Checksums for every artifact
+        shell: bash
+        run: |
+          cd packages/desktop/release
+          rm -f SHA256SUMS.txt
+          for f in *.exe *.dmg *.zip *.AppImage *.deb; do
+            [ -f "$f" ] && sha256sum "$f" >> "SHA256SUMS-${{ matrix.os }}.txt"
+          done
+          cat "SHA256SUMS-${{ matrix.os }}.txt" || true
+
+      - name: Attach to the release
         uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
         with:
+          draft: false
+          generate_release_notes: true
+          fail_on_unmatched_files: false
           files: |
             packages/desktop/release/*.exe
             packages/desktop/release/*.dmg
             packages/desktop/release/*.AppImage
             packages/desktop/release/*.deb
             packages/desktop/release/*.zip
+            packages/desktop/release/SHA256SUMS-*.txt
+
+  npm:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    # Runs only when a token is configured, so the installers above never wait
+    # on it and never fail because of it.
+    if: ${{ github.event_name == 'push' }}
+    continue-on-error: true
+    permissions:
+      contents: read
+      # Lets npm attest that this build produced this package, tying the
+      # published tarball to this commit and this workflow run.
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: '22'
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+      - name: Write SHA256SUMS into each package
+        run: node scripts/write-checksums.mjs
+
+      - name: Publish
+        if: ${{ env.NODE_AUTH_TOKEN != '' }}
+        run: |
+          npm publish --provenance --access public -w @sda/core
+          npm publish --provenance --access public -w @sda/ui
+          npm publish --provenance --access public -w @sda/cli
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -14,10 +14,9 @@ rebuilt in TypeScript for Windows, macOS and Linux.
 
 Built by the people behind [nohax.club](https://nohax.club).
 
-### [Download for Windows](https://github.com/idroid007/SteamDesktopAuthenticatorV2/releases/latest)
+### [Download](https://github.com/idroid007/SteamDesktopAuthenticatorV2/releases/latest)
 
-Portable build, no installation. Installer and Linux and macOS builds are on the
-[releases page](https://github.com/idroid007/SteamDesktopAuthenticatorV2/releases).
+Windows portable, Windows installer, macOS on Intel and Apple silicon, and Linux.
 
 <img src="assets/screenshot-main.png" alt="The account list, the current code with its countdown, and pending trade confirmations" width="820">
 
@@ -84,11 +83,27 @@ The same rebuild picks up the rest of the backlog:
 
 ## Install
 
-**Windows**: download the portable `.exe` from the
-[releases page](https://github.com/idroid007/SteamDesktopAuthenticatorV2/releases/latest)
-and run it. There is an installer there too, if you would rather have a Start menu entry.
+Everything is on the
+[releases page](https://github.com/idroid007/SteamDesktopAuthenticatorV2/releases/latest).
 
-**macOS and Linux**: grab the `.dmg`, `.AppImage` or `.deb` from the same page.
+| You have | Take |
+|---|---|
+| Windows, want to run it and nothing else | `...-portable.exe` |
+| Windows, want a Start menu entry | `...-setup.exe` |
+| macOS on Apple silicon | `...-mac-arm64.dmg` |
+| macOS on Intel | `...-mac-x64.dmg` |
+| Linux, most distributions | `...-linux-x64.AppImage` |
+| Debian or Ubuntu | `...-linux-x64.deb` |
+| Anything else, or you prefer to unpack it yourself | `...-linux-x64.tar.gz` |
+
+Nothing is code signed yet, so Windows SmartScreen and macOS Gatekeeper will both
+warn you. That is the same warning SDA v1 collected ten issue reports about, and a
+certificate is the only thing that removes it. Until then, check the download
+against the `SHA256SUMS` file attached to the release:
+
+```bash
+sha256sum -c SHA256SUMS-windows-latest.txt
+```
 
 **From npm**, if you want the command line or the library:
 

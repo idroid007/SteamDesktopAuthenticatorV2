@@ -10,7 +10,13 @@
  */
 import { deflateSync } from 'node:zlib';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+/** These scripts run from the repo root and from inside a workspace package,
+ *  so paths are anchored to the script's own location rather than the CWD. */
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
 
 /* ------------------------------------------------------------------ PNG */
 
@@ -211,7 +217,7 @@ function buildIco(images) {
 
 /* ----------------------------------------------------------------- write */
 
-const outDir = join('packages', 'desktop', 'build');
+const outDir = join(ROOT, 'packages', 'desktop', 'build');
 await mkdir(outDir, { recursive: true });
 
 const SIZES = [16, 24, 32, 48, 64, 128, 256];
@@ -226,6 +232,6 @@ await writeFile(join(outDir, 'icon.png'), png512);
 console.log(`icon.png   512 px, ${png512.length} bytes`);
 
 // A copy for the README and the web interface favicon.
-await mkdir('assets', { recursive: true });
-await writeFile(join('assets', 'icon.png'), encodePng(render(256), 256));
+await mkdir(join(ROOT, 'assets'), { recursive: true });
+await writeFile(join(ROOT, 'assets', 'icon.png'), encodePng(render(256), 256));
 console.log('assets/icon.png  256 px');

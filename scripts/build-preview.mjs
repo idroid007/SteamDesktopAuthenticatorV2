@@ -6,8 +6,15 @@
  * app itself carries its own copies and asks Google for nothing.
  */
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const css = await readFile('packages/ui/src/app.css', 'utf8');
+/** These scripts run from the repo root and from inside a workspace package,
+ *  so paths are anchored to the script's own location rather than the CWD. */
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+
+const css = await readFile(join(ROOT, 'packages/ui/src/app.css'), 'utf8');
 
 const FONTS = `<link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -192,6 +199,6 @@ ${confirmations}
 </html>
 `;
 
-await mkdir('docs', { recursive: true });
-await writeFile('docs/preview.html', html);
+await mkdir(join(ROOT, 'docs'), { recursive: true });
+await writeFile(join(ROOT, 'docs/preview.html'), html);
 console.log(`docs/preview.html written (${html.length} bytes)`);

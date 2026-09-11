@@ -7,9 +7,16 @@
  */
 import { createHash } from 'node:crypto';
 import { readdir, readFile, writeFile } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import { relative } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const PACKAGES = ['packages/core', 'packages/ui', 'packages/cli'];
+/** These scripts run from the repo root and from inside a workspace package,
+ *  so paths are anchored to the script's own location rather than the CWD. */
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+
+const PACKAGES = ['core', 'ui', 'cli'].map((n) => join(ROOT, 'packages', n));
 
 async function walk(dir) {
   const out = [];

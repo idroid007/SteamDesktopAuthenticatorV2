@@ -11,9 +11,15 @@
  * showing up somewhere unexpected.
  */
 import { cp, mkdir, rm, readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const DESKTOP = join('packages', 'desktop');
+/** These scripts run from the repo root and from inside a workspace package,
+ *  so paths are anchored to the script's own location rather than the CWD. */
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+
+const DESKTOP = join(ROOT, 'packages', 'desktop');
 const TARGET = join(DESKTOP, 'node_modules', '@sda');
 const PACKAGES = ['core', 'ui', 'cli'];
 
@@ -21,7 +27,7 @@ await rm(TARGET, { recursive: true, force: true });
 await mkdir(TARGET, { recursive: true });
 
 for (const name of PACKAGES) {
-  const from = join('packages', name);
+  const from = join(ROOT, 'packages', name);
   const to = join(TARGET, name);
   await mkdir(to, { recursive: true });
 

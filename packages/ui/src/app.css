@@ -1530,3 +1530,111 @@
     height: 34px;
   }
 }
+
+/* ==================================================================
+   nohax.club touchpoints. Placed where they help rather than nag:
+   the lock screen, the sidebar, an empty queue, and settings.
+   ================================================================== */
+
+@layer components {
+  .gate__by {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin-top: calc(var(--s-1) * -1);
+    font-size: 11px;
+    color: var(--bone-3);
+    text-decoration: none;
+    transition: color var(--fast) var(--ease);
+
+    & strong {
+      font-family: var(--font-display);
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      color: var(--accent-hot);
+    }
+
+    &:hover {
+      color: var(--bone-2);
+    }
+  }
+
+  .gate__by-tail {
+    color: var(--bone-3);
+  }
+
+  .sidebar__foot-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-decoration: none;
+  }
+
+  .sidebar__tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    margin-top: var(--s-2);
+
+    & a {
+      font-size: 11px;
+      color: var(--bone-3);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease);
+
+      &:hover {
+        color: var(--accent-hot);
+        border-bottom-color: var(--accent-edge);
+      }
+    }
+  }
+
+  .empty__link {
+    display: inline-block;
+    margin-top: var(--s-3);
+    font-size: 12px;
+    color: var(--bone-2);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--bone-3);
+    transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease);
+
+    &:hover {
+      color: var(--accent-hot);
+      border-bottom-color: var(--accent-hot);
+    }
+  }
+
+  .about {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--s-3);
+    font-size: 11px;
+    color: var(--bone-3);
+    line-height: 1.5;
+
+    & a {
+      color: var(--accent-hot);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .about__version {
+    font-family: var(--font-mono);
+    white-space: nowrap;
+  }
+}
+
+@layer components {
+  /* Sits under an empty state. Centred and sized to its label, rather than
+     stretching across the panel the way a flex child does by default. */
+  .empty__cta {
+    align-self: center;
+    margin-top: var(--s-3);
+  }
+}

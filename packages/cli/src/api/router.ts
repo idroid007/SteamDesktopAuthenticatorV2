@@ -49,6 +49,8 @@ async function readBody(req: IncomingMessage): Promise<Record<string, unknown>> 
 
 const str = (value: unknown): string => (typeof value === 'string' ? value : '');
 
+const VERSION = '2.0.0-alpha.1';
+
 /**
  * A read-only view of an account.
  *
@@ -84,6 +86,7 @@ export async function route(
   if (head === 'state' && method === 'GET') {
     if (session.idleExpired) session.lock();
     return json(res, 200, {
+      version: VERSION,
       vaultExists: await session.vaultFileExists(),
       locked: session.locked,
       vault: session.vaultPath,

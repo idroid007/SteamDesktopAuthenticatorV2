@@ -205,17 +205,32 @@ Full reference in [packages/core/API.md](packages/core/API.md).
 
 ## Checking who you are trading with
 
-A confirmation tells you a trade is waiting. It does not tell you whether the person
-on the other side has a history of taking items and disappearing.
+A confirmation tells you a trade is waiting. It says nothing about whether the
+person on the other side has a history of taking items and disappearing.
 
 Trade confirmations in the app carry a link straight to the reputation checker on
 [nohax.club](https://nohax.club/rep), which tracks ban history, trade holds and
 trust signals for CS2 accounts. The partner's name goes to your clipboard when you
-click, so you can paste it into the search box.
+click, ready to paste into the search box.
 
-Steam does not put the partner's SteamID in a confirmation, only their display
-name, so the link opens the tool rather than jumping to a profile we cannot
-identify with certainty.
+Steam puts only the partner's display name in a confirmation, never their SteamID,
+so the link opens the tool rather than jumping to a profile we cannot identify with
+certainty.
+
+## From the same people
+
+[nohax.club](https://nohax.club) has run free Counter-Strike tools since 2019. No
+account, no paywall. The ones traders reach for:
+
+| Tool | What it answers |
+|---|---|
+| [Reputation checker](https://nohax.club/rep) | Has this account been banned, and does its history look safe to trade with |
+| [CS2 ban list](https://nohax.club/cs2-ban-list) | Which reported accounts Valve has since banned |
+| [Trust factor](https://nohax.club/cs2-trust-factor) | Why your matches keep putting you with cheaters |
+| [CS2 stats](https://nohax.club/cs2-stats) | Where your own numbers sit |
+| [Report a bot](https://nohax.club/report-bot) | Add an account to the watchlist |
+
+The lobby tells you nothing. The profile tells you everything.
 
 ## Moving from SDA v1
 

@@ -115,6 +115,7 @@ const state = {
   counts: new Map<string, number>(),
   confirmations: [] as ConfirmationView[],
   settings: null as Settings | null,
+  version: '',
   vaultPath: '',
   exposedToNetwork: false,
   linkPendingId: '',
@@ -209,9 +210,11 @@ async function boot(): Promise<void> {
       locked: boolean;
       vault: string;
       exposedToNetwork: boolean;
+      version?: string;
     }>('/state');
     state.vaultPath = s.vault;
     state.exposedToNetwork = s.exposedToNetwork;
+    state.version = s.version ?? '';
 
     if (!s.vaultExists) showGate('setup');
     else if (s.locked) showGate('unlock');
@@ -345,8 +348,7 @@ function renderNoAccounts(): void {
       <div class="empty__hint">Add one to see codes and confirmations here.</div>
     </div>`;
   const cta = document.createElement('button');
-  cta.className = 'btn btn--primary';
-  cta.style.marginTop = '14px';
+  cta.className = 'btn btn--primary empty__cta';
   cta.textContent = 'Add an account';
   cta.addEventListener('click', openAdd);
   body.append(cta);
@@ -514,8 +516,7 @@ function renderConfirmations(list: ConfirmationView[]): void {
         <div class="empty__title">Signed out of Steam.</div>
       </div>`;
     const button = document.createElement('button');
-    button.className = 'btn btn--primary';
-    button.style.marginTop = '14px';
+    button.className = 'btn btn--primary empty__cta';
     button.textContent = `Sign in as ${account.accountName}`;
     button.addEventListener('click', () => openLogin(account));
     body.append(button);
@@ -527,6 +528,9 @@ function renderConfirmations(list: ConfirmationView[]): void {
       <div class="empty">
         <div class="empty__title">Nothing waiting.</div>
         <div class="empty__hint">New trades and listings show up here on their own.</div>
+        <a class="empty__link" href="https://nohax.club/rep" target="_blank" rel="noreferrer noopener">
+          Look up a trader on nohax.club before your next deal
+        </a>
       </div>`;
     return;
   }
@@ -1094,6 +1098,8 @@ $('act-unlink').addEventListener('click', async () => {
 $('settings-btn').addEventListener('click', () => {
   const s = state.settings;
   if (!s) return;
+
+  $('about-version').textContent = state.version ? `v${state.version}` : '';
 
   input('set-autocheck').checked = s.autoCheckConfirmations;
   input('set-interval').value = String(s.checkIntervalSeconds);

@@ -42,6 +42,11 @@
         <p class="gate__error" id="gate-error" role="alert" hidden></p>
         <button class="btn btn--primary btn--block" type="submit" id="unlock-btn">Unlock</button>
         <p class="gate__path" id="gate-path"></p>
+        <a class="gate__by" href="https://nohax.club" target="_blank" rel="noreferrer noopener">
+          <span>Made by</span>
+          <strong>nohax.club</strong>
+          <span class="gate__by-tail">free CS2 tools, no login</span>
+        </a>
       </form>
     </section>
 
@@ -93,10 +98,17 @@
           <input class="sidebar__search" id="search" type="search" placeholder="Filter accounts"
             spellcheck="false" autocomplete="off" hidden />
           <ul class="accounts" id="accounts"></ul>
-          <a class="sidebar__foot" href="https://nohax.club" target="_blank" rel="noreferrer noopener">
-            <span class="sidebar__foot-label">Check a trader before you deal</span>
-            <span class="sidebar__foot-link">nohax.club</span>
-          </a>
+          <div class="sidebar__foot">
+            <a class="sidebar__foot-main" href="https://nohax.club/rep" target="_blank" rel="noreferrer noopener">
+              <span class="sidebar__foot-label">Check a trader before you deal</span>
+              <span class="sidebar__foot-link">nohax.club</span>
+            </a>
+            <div class="sidebar__tools">
+              <a href="https://nohax.club/cs2-ban-list" target="_blank" rel="noreferrer noopener">Ban list</a>
+              <a href="https://nohax.club/cs2-trust-factor" target="_blank" rel="noreferrer noopener">Trust factor</a>
+              <a href="https://nohax.club/cs2-stats" target="_blank" rel="noreferrer noopener">Stats</a>
+            </div>
+          </div>
         </aside>
 
         <main class="main" id="main">
@@ -371,6 +383,16 @@
                 <span class="field__suffix">seconds first</span>
               </label>
             </div>
+          </div>
+
+          <hr class="rule" />
+          <div class="about">
+            <span class="about__text">
+              Built by the people behind
+              <a href="https://nohax.club" target="_blank" rel="noreferrer noopener">nohax.club</a>,
+              where the reputation checker, the CS2 ban list and the crosshair tools live.
+            </span>
+            <span class="about__version" id="about-version"></span>
           </div>
 
           <p class="gate__error" id="settings-error" role="alert" hidden></p>

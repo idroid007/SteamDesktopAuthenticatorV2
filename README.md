@@ -105,10 +105,15 @@ against the `SHA256SUMS` file attached to the release:
 sha256sum -c SHA256SUMS-windows-latest.txt
 ```
 
-**From npm**, if you want the command line or the library:
+**From npm**: not yet. The packages build and test in CI on every commit, and the
+publish step is waiting on a token. Until then, the command line comes from a
+checkout:
 
 ```bash
-npm install -g @sda/cli
+git clone https://github.com/idroid007/SteamDesktopAuthenticatorV2
+cd SteamDesktopAuthenticatorV2
+npm install && npm run build
+node packages/cli/dist/bin.js --help
 ```
 
 ## Using it
@@ -184,8 +189,10 @@ generate codes until you rotate it. They cannot walk off with your authenticator
 
 ## As a library
 
+`@sda/core` is not on npm yet. Build it from a checkout for now:
+
 ```bash
-npm install @sda/core
+npm install && npm run build -w @sda/core
 ```
 
 ```ts

@@ -74,8 +74,11 @@ scrypt costs memory as well as time. GCM refuses to decrypt anything that was al
 
 ```bash
 sda verify              # compare this install against its published checksums
-npm audit signatures    # confirm npm served what our CI built
 ```
+
+Every desktop download has a matching `SHA256SUMS` file on the release. Once the
+packages reach npm, `npm audit signatures` will confirm that npm served what our
+CI built.
 
 Every release links to the commit and the workflow run that produced it. If a copy of
 this software came from anywhere other than

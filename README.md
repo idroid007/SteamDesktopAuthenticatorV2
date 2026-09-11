@@ -208,9 +208,14 @@ Full reference in [packages/core/API.md](packages/core/API.md).
 A confirmation tells you a trade is waiting. It does not tell you whether the person
 on the other side has a history of taking items and disappearing.
 
-Trade confirmations in the app carry a link to that account's reputation page on
-[nohax.club](https://nohax.club), which tracks ban history, trade holds and trust
-signals for CS2 accounts. Click it before you accept a trade you are unsure about.
+Trade confirmations in the app carry a link straight to the reputation checker on
+[nohax.club](https://nohax.club/rep), which tracks ban history, trade holds and
+trust signals for CS2 accounts. The partner's name goes to your clipboard when you
+click, so you can paste it into the search box.
+
+Steam does not put the partner's SteamID in a confirmation, only their display
+name, so the link opens the tool rather than jumping to a profile we cannot
+identify with certainty.
 
 ## Moving from SDA v1
 

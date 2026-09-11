@@ -581,16 +581,24 @@ function confirmationCard(conf: ConfirmationView): HTMLElement {
   when.textContent = conf.when;
   meta.append(when);
 
-  // Steam names the trade partner in the headline. It does not give their
-  // SteamID here: creator_id on a trade confirmation is the trade offer id,
-  // so looking the person up goes through their name.
+  // Steam names the trade partner in the headline but does not give their
+  // SteamID: creator_id on a trade confirmation is the trade offer id. So the
+  // link opens the reputation tool with the name carried over, rather than
+  // pretending to deep-link to a profile we cannot identify.
   if (conf.kind === 'trade' && conf.headline.trim()) {
+    const partner = conf.headline.trim();
     const rep = document.createElement('a');
     rep.className = 'conf__rep';
-    rep.href = `https://nohax.club/search?q=${encodeURIComponent(conf.headline.trim())}`;
+    rep.href = `https://nohax.club/rep?q=${encodeURIComponent(partner)}`;
     rep.target = '_blank';
     rep.rel = 'noreferrer noopener';
+    rep.title = `Look up ${partner} on nohax.club`;
     rep.textContent = 'Check this trader';
+    // The name goes to the clipboard on the way out, so it can be pasted
+    // straight into the search box.
+    rep.addEventListener('click', () => {
+      void navigator.clipboard?.writeText(partner).catch(() => {});
+    });
     meta.append(rep);
   }
 

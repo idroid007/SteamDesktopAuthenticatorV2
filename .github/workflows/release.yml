@@ -82,7 +82,8 @@ jobs:
             echo '```'
             echo "</details>"
           } >> "$GITHUB_STEP_SUMMARY"
-          cp packaging-${{ matrix.os }}.log packages/desktop/release/ 2>/dev/null || true
+          # Deliberately not copied into release/: the summary above carries
+          # the tail, and a log does not belong on a download page.
 
       - name: Checksums for every artifact
         shell: bash
@@ -108,7 +109,6 @@ jobs:
             packages/desktop/release/*.tar.gz
             packages/desktop/release/*.zip
             packages/desktop/release/SHA256SUMS-*.txt
-            packages/desktop/release/packaging-*.log
 
   npm:
     name: Publish to npm

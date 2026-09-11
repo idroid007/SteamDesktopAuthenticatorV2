@@ -111,14 +111,25 @@
       "icon": "build/icon.png",
       "category": "Utility",
       "maintainer": "Ishu Sharma <ishubot@gmail.com>",
-      "artifactName": "SteamDesktopAuthenticator-${version}-linux-${arch}.${ext}"
+      "artifactName": "SteamDesktopAuthenticator-${version}-linux-${arch}.${ext}",
+      "executableName": "steam-desktop-authenticator",
+      "desktop": {
+        "Name": "Steam Desktop Authenticator",
+        "Comment": "Steam Guard codes and trade confirmations",
+        "Categories": "Utility;Security;",
+        "StartupWMClass": "steam-desktop-authenticator"
+      }
     },
     "electronVersion": "33.4.11",
     "portable": {
       "artifactName": "SteamDesktopAuthenticator-${version}-portable.${ext}",
       "unicode": true
     },
-    "artifactName": "SteamDesktopAuthenticator-${version}-${os}-${arch}.${ext}"
+    "artifactName": "SteamDesktopAuthenticator-${version}-${os}-${arch}.${ext}",
+    "deb": {
+      "packageName": "steam-desktop-authenticator",
+      "priority": "optional"
+    }
   },
   "repository": {
     "type": "git",

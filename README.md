@@ -92,8 +92,8 @@ Everything is on the
 | Windows, want a Start menu entry | `...-setup.exe` |
 | macOS on Apple silicon | `...-mac-arm64.dmg` |
 | macOS on Intel | `...-mac-x64.dmg` |
-| Linux, most distributions | `...-linux-x64.AppImage` |
-| Debian or Ubuntu | `...-linux-x64.deb` |
+| Linux, most distributions | `...-linux-x86_64.AppImage` |
+| Debian or Ubuntu | `...-linux-amd64.deb` |
 | Anything else, or you prefer to unpack it yourself | `...-linux-x64.tar.gz` |
 
 Nothing is code signed yet, so Windows SmartScreen and macOS Gatekeeper will both

@@ -40,19 +40,38 @@ jobs:
       - name: Test
         run: npm test
 
+      # electron-builder shells out to these when it writes deb and AppImage
+      # packages, and a bare runner does not always carry them.
+      - name: Linux packaging tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends fakeroot libarchive-tools
+
       - name: Package the desktop app
         run: npm run package -w @sda/desktop
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # No signing certificate, so do not go looking for one.
           CSC_IDENTITY_AUTO_DISCOVERY: false
+          # Ubuntu 24.04 ships without libfuse2, so AppImage tooling has to
+          # unpack itself rather than mount.
+          APPIMAGE_EXTRACT_AND_RUN: 1
+          DEBUG: ${{ runner.os == 'Linux' && 'electron-builder' || '' }}
+
+      # The log above is the only place a packaging failure explains itself, so
+      # surface the tail where someone reading the run can find it.
+      - name: Why packaging failed
+        if: failure()
+        run: |
+          echo "### Packaging failed on ${{ matrix.os }}" >> $GITHUB_STEP_SUMMARY
+          ls -la packages/desktop/release 2>/dev/null || echo "no release directory" >> $GITHUB_STEP_SUMMARY
+        shell: bash
 
       - name: Checksums for every artifact
         shell: bash
         run: |
           cd packages/desktop/release
           rm -f SHA256SUMS.txt
-          for f in *.exe *.dmg *.zip *.AppImage *.deb; do
+          for f in *.exe *.dmg *.zip *.AppImage *.deb *.tar.gz; do
             [ -f "$f" ] && sha256sum "$f" >> "SHA256SUMS-${{ matrix.os }}.txt"
           done
           cat "SHA256SUMS-${{ matrix.os }}.txt" || true
@@ -68,6 +87,7 @@ jobs:
             packages/desktop/release/*.dmg
             packages/desktop/release/*.AppImage
             packages/desktop/release/*.deb
+            packages/desktop/release/*.tar.gz
             packages/desktop/release/*.zip
             packages/desktop/release/SHA256SUMS-*.txt
 

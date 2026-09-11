@@ -1,0 +1,105 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to release
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to npm with provenance
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      # Lets npm attest that this build produced this package, tying the
+      # published tarball to this commit and this workflow run.
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: '22'
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build -w @sda/core && npm run build -w @sda/ui && npm run build -w @sda/cli
+
+      - name: Test
+        run: npm test
+
+      - name: Write SHA256SUMS into each package
+        run: node scripts/write-checksums.mjs
+
+      - name: Publish @sda/core
+        run: npm publish --provenance --access public -w @sda/core
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @sda/ui
+        run: npm publish --provenance --access public -w @sda/ui
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @sda/cli
+        run: npm publish --provenance --access public -w @sda/cli
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Collect checksums for the release notes
+        run: |
+          cat packages/*/SHA256SUMS > SHA256SUMS
+          echo "Published from ${{ github.sha }}" >> SHA256SUMS
+
+      - name: Attach checksums to the GitHub release
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
+        with:
+          files: SHA256SUMS
+          generate_release_notes: true
+
+  desktop:
+    name: Desktop build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: publish
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Package the desktop app
+        run: npm run package -w @sda/desktop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Attach installers to the release
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
+        with:
+          files: |
+            packages/desktop/release/*.exe
+            packages/desktop/release/*.dmg
+            packages/desktop/release/*.AppImage
+            packages/desktop/release/*.deb
+            packages/desktop/release/*.zip

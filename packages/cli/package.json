@@ -1,0 +1,45 @@
+{
+  "name": "@sda/cli",
+  "version": "2.0.0-alpha.1",
+  "description": "Steam Guard codes and trade confirmations from your terminal. Runs anywhere Node runs.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "sda": "./dist/bin.js",
+    "sda2": "./dist/bin.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "SHA256SUMS"
+  ],
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/bin.js"
+  },
+  "dependencies": {
+    "@sda/core": "2.0.0-alpha.1",
+    "@sda/ui": "2.0.0-alpha.1"
+  },
+  "keywords": [
+    "steam",
+    "steam-guard",
+    "2fa",
+    "cli",
+    "trade-confirmations",
+    "authenticator"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/idroid007/SteamDesktopAuthenticatorV2.git",
+    "directory": "packages/cli"
+  },
+  "exports": {
+    ".": "./dist/bin.js",
+    "./serve": "./dist/serve.js",
+    "./package.json": "./package.json"
+  }
+}

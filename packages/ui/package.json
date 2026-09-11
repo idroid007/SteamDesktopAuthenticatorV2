@@ -1,0 +1,26 @@
+{
+  "name": "@sda/ui",
+  "version": "2.0.0-alpha.1",
+  "description": "Web interface for Steam Desktop Authenticator V2. Loaded by the desktop app and served by the daemon.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/app.js",
+  "files": [
+    "dist",
+    "SHA256SUMS",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node copy-assets.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/idroid007/SteamDesktopAuthenticatorV2.git",
+    "directory": "packages/ui"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./dist/*": "./dist/*",
+    ".": "./dist/app.js"
+  }
+}

@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <title>Steam Desktop Authenticator</title>
+    <link rel="stylesheet" href="./fonts.css" />
+    <link rel="stylesheet" href="./app.css" />
+  </head>
+  <body>
+    <!-- ------------------------------------------------------------ gate -->
+    <section class="gate" id="gate" hidden>
+      <form class="gate__card" id="unlock-form">
+        <div class="brand brand--lg">
+          <span class="brand__mark" aria-hidden="true"></span>
+          <span class="brand__name">Steam Desktop Authenticator</span>
+        </div>
+
+        <p class="gate__lede" id="gate-lede">
+          Your codes live on this machine. Unlock the vault to read them.
+        </p>
+
+        <label class="field">
+          <span class="field__label" id="passphrase-label">Vault passphrase</span>
+          <input class="field__input" id="passphrase" type="password"
+            autocomplete="current-password" spellcheck="false" required />
+        </label>
+
+        <!-- Shown only while creating a vault for the first time -->
+        <label class="field" id="confirm-field" hidden>
+          <span class="field__label">Type it again</span>
+          <input class="field__input" id="passphrase-confirm" type="password"
+            autocomplete="new-password" spellcheck="false" />
+        </label>
+
+        <p class="gate__note" id="gate-note" hidden>
+          Nobody can reset this for you. If you forget it, the accounts inside are gone, so keep
+          your revocation codes somewhere else as well.
+        </p>
+
+        <p class="gate__error" id="gate-error" role="alert" hidden></p>
+        <button class="btn btn--primary btn--block" type="submit" id="unlock-btn">Unlock</button>
+        <p class="gate__path" id="gate-path"></p>
+      </form>
+    </section>
+
+    <!-- ------------------------------------------------------------- app -->
+    <div class="app" id="app" hidden>
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand__mark" aria-hidden="true"></span>
+          <span class="brand__name">Authenticator</span>
+        </div>
+        <div class="topbar__right">
+          <span class="clock" id="clock" title="Drift between this machine and Steam"></span>
+          <span class="auto-chip" id="auto-chip" hidden title="Automatic approval is running"></span>
+          <button class="icon-btn" id="refresh-btn" title="Check for new confirmations" aria-label="Refresh">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 1.5V5H10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="icon-btn" id="settings-btn" title="Settings" aria-label="Settings">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.4" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5v1.7M8 12.8v1.7M14.5 8h-1.7M3.2 8H1.5M12.6 3.4l-1.2 1.2M4.6 11.4l-1.2 1.2M12.6 12.6l-1.2-1.2M4.6 4.6L3.4 3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <button class="icon-btn" id="lock-btn" title="Lock the vault" aria-label="Lock">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 7V4.8a2.5 2.5 0 0 1 5 0V7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+
+          <div class="winctl" id="winctl">
+            <button class="winctl__btn" id="win-min" title="Minimise" aria-label="Minimise">
+              <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M0 5h10" stroke="currentColor" stroke-width="1"/></svg>
+            </button>
+            <button class="winctl__btn" id="win-max" title="Maximise" aria-label="Maximise">
+              <svg viewBox="0 0 10 10" aria-hidden="true"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+            </button>
+            <button class="winctl__btn winctl__btn--close" id="win-close" title="Close to tray" aria-label="Close">
+              <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M0 0l10 10M10 0L0 10" stroke="currentColor" stroke-width="1"/></svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="layout">
+        <aside class="sidebar">
+          <div class="sidebar__head">
+            <span class="sidebar__title">Accounts</span>
+            <div class="sidebar__head-right">
+              <span class="pill" id="account-count"></span>
+              <button class="icon-btn icon-btn--sm" id="add-btn" title="Add an account" aria-label="Add an account">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5v9M3.5 8h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+          </div>
+          <input class="sidebar__search" id="search" type="search" placeholder="Filter accounts"
+            spellcheck="false" autocomplete="off" hidden />
+          <ul class="accounts" id="accounts"></ul>
+          <a class="sidebar__foot" href="https://nohax.club" target="_blank" rel="noreferrer noopener">
+            <span class="sidebar__foot-label">Check a trader before you deal</span>
+            <span class="sidebar__foot-link">nohax.club</span>
+          </a>
+        </aside>
+
+        <main class="main" id="main">
+          <section class="code-panel" id="code-panel">
+            <div class="code-panel__meta">
+              <h1 class="code-panel__name" id="active-name"></h1>
+              <button class="code-panel__id" id="active-id" title="Copy the SteamID"></button>
+            </div>
+
+            <div class="code-face">
+              <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+                <circle class="ring__track" cx="60" cy="60" r="54" />
+                <circle class="ring__fill" id="ring-fill" cx="60" cy="60" r="54" />
+              </svg>
+              <button class="code" id="code" title="Click to copy">
+                <span class="code__value" id="code-value">•••••</span>
+              </button>
+            </div>
+
+            <div class="code-panel__actions">
+              <span class="countdown" id="countdown"></span>
+              <button class="btn btn--ghost" id="copy-btn">Copy code</button>
+              <button class="btn btn--ghost" id="account-menu-btn" title="More" aria-label="More actions">⋯</button>
+            </div>
+          </section>
+
+          <section class="confirms">
+            <div class="confirms__head">
+              <h2 class="confirms__title">Waiting on you</h2>
+              <div class="confirms__bulk" id="bulk" hidden>
+                <button class="btn btn--ghost btn--sm" id="deny-all">Deny all</button>
+                <button class="btn btn--primary btn--sm" id="accept-all">Accept all</button>
+              </div>
+            </div>
+            <div class="confirms__body" id="confirms"></div>
+          </section>
+        </main>
+      </div>
+
+      <div class="toasts" id="toasts" aria-live="polite"></div>
+
+      <!-- --------------------------------------------------------- bulk -->
+      <dialog class="modal" id="bulk-dialog">
+        <form method="dialog" class="modal__body">
+          <h2 class="modal__title" id="bulk-title">Accept everything?</h2>
+          <p class="modal__text" id="bulk-text"></p>
+          <div class="modal__actions">
+            <button class="btn btn--sm" value="cancel">Cancel</button>
+            <button class="btn btn--primary btn--sm" value="go" id="bulk-go">Accept all</button>
+          </div>
+        </form>
+      </dialog>
+
+      <!-- ------------------------------------------------------- add menu -->
+      <dialog class="modal" id="add-dialog">
+        <div class="modal__body">
+          <h2 class="modal__title">Add an account</h2>
+          <p class="modal__text">Bring an authenticator across, or create a new one on Steam.</p>
+          <div class="choice-list">
+            <button class="choice" id="choose-import">
+              <span class="choice__title">Import maFiles</span>
+              <span class="choice__text">From SDA v1, steamguard-cli or a phone backup.</span>
+            </button>
+            <button class="choice" id="choose-link">
+              <span class="choice__title">Add a new authenticator</span>
+              <span class="choice__text">Steam texts a code to the phone on the account.</span>
+            </button>
+          </div>
+          <div class="modal__actions">
+            <button class="btn btn--sm" data-close>Close</button>
+          </div>
+        </div>
+      </dialog>
+
+      <!-- --------------------------------------------------------- import -->
+      <dialog class="modal modal--wide" id="import-dialog">
+        <div class="modal__body">
+          <h2 class="modal__title">Import maFiles</h2>
+          <p class="modal__text">
+            Drop the files here, or pick them. If SDA encrypted them, decrypt them in SDA first.
+          </p>
+          <label class="dropzone" id="dropzone">
+            <input type="file" id="import-input" multiple accept=".maFile,.json,application/json" hidden />
+            <span class="dropzone__title">Drop maFiles here</span>
+            <span class="dropzone__hint">or click to browse</span>
+          </label>
+          <div class="import-results" id="import-results"></div>
+          <div class="modal__actions">
+            <button class="btn btn--sm" data-close>Done</button>
+          </div>
+        </div>
+      </dialog>
+
+      <!-- ---------------------------------------------------------- login -->
+      <dialog class="modal" id="login-dialog">
+        <form class="modal__body" id="login-form">
+          <h2 class="modal__title">Sign in to Steam</h2>
+          <p class="modal__text" id="login-text"></p>
+          <label class="field">
+            <span class="field__label">Steam password</span>
+            <input class="field__input" id="login-password" type="password"
+              autocomplete="current-password" spellcheck="false" />
+          </label>
+          <label class="field" id="login-guard-field" hidden>
+            <span class="field__label" id="login-guard-label">Steam Guard code</span>
+            <input class="field__input" id="login-guard" inputmode="text" autocomplete="one-time-code"
+              spellcheck="false" maxlength="8" />
+          </label>
+          <p class="modal__note">
+            Your password is encrypted with a key Steam issues for this attempt. It never reaches us.
+          </p>
+          <p class="gate__error" id="login-error" role="alert" hidden></p>
+          <div class="modal__actions">
+            <button class="btn btn--sm" type="button" data-close>Cancel</button>
+            <button class="btn btn--primary btn--sm" type="submit" id="login-submit">Sign in</button>
+          </div>
+        </form>
+      </dialog>
+
+      <!-- ----------------------------------------------------------- link -->
+      <dialog class="modal modal--wide" id="link-dialog">
+        <div class="modal__body">
+          <h2 class="modal__title" id="link-title">Add a new authenticator</h2>
+
+          <form id="link-step-login" class="step">
+            <p class="modal__text">
+              Sign in to the Steam account that will hold this authenticator. It needs a phone
+              number already verified on Steam.
+            </p>
+            <label class="field">
+              <span class="field__label">Steam account name</span>
+              <input class="field__input" id="link-account" autocomplete="username" spellcheck="false" />
+            </label>
+            <label class="field">
+              <span class="field__label">Steam password</span>
+              <input class="field__input" id="link-password" type="password" autocomplete="current-password" />
+            </label>
+            <label class="field" id="link-guard-field" hidden>
+              <span class="field__label" id="link-guard-label">Steam Guard code</span>
+              <input class="field__input" id="link-guard" autocomplete="one-time-code" maxlength="8" />
+            </label>
+            <div class="modal__actions">
+              <button class="btn btn--sm" type="button" data-close>Cancel</button>
+              <button class="btn btn--primary btn--sm" type="submit" id="link-login-submit">Continue</button>
+            </div>
+          </form>
+
+          <div id="link-step-code" class="step" hidden>
+            <p class="modal__text modal__text--warn">
+              Write this revocation code down now, somewhere that is not this computer. Steam will
+              not show it again, and without it you cannot remove the authenticator yourself.
+            </p>
+            <div class="revocation" id="link-revocation"></div>
+            <label class="check">
+              <input type="checkbox" id="link-confirmed" />
+              <span>I have written it down.</span>
+            </label>
+            <label class="field">
+              <span class="field__label">Code Steam texted you</span>
+              <input class="field__input" id="link-sms" inputmode="numeric" autocomplete="one-time-code" />
+            </label>
+            <div class="modal__actions">
+              <button class="btn btn--sm" type="button" data-close>Cancel</button>
+              <button class="btn btn--primary btn--sm" id="link-finalize" disabled>Activate</button>
+            </div>
+          </div>
+
+          <p class="gate__error" id="link-error" role="alert" hidden></p>
+        </div>
+      </dialog>
+
+      <!-- -------------------------------------------------- account menu -->
+      <dialog class="modal" id="account-dialog">
+        <div class="modal__body">
+          <h2 class="modal__title" id="account-dialog-title">Account</h2>
+          <div class="choice-list">
+            <button class="choice" id="act-login">
+              <span class="choice__title">Sign in to Steam</span>
+              <span class="choice__text">Refresh the session so confirmations load.</span>
+            </button>
+            <button class="choice" id="act-rename">
+              <span class="choice__title">Rename</span>
+              <span class="choice__text">A label for this list. Steam never sees it.</span>
+            </button>
+            <button class="choice" id="act-revocation">
+              <span class="choice__title">Show revocation code</span>
+              <span class="choice__text">The code that removes this authenticator.</span>
+            </button>
+            <button class="choice" id="act-export">
+              <span class="choice__title">Export maFile</span>
+              <span class="choice__text">Unencrypted. SDA v1 and steamguard-cli both read it.</span>
+            </button>
+            <button class="choice choice--danger" id="act-remove">
+              <span class="choice__title">Remove from this vault</span>
+              <span class="choice__text">Steam keeps the authenticator. Export first.</span>
+            </button>
+            <button class="choice choice--danger" id="act-unlink">
+              <span class="choice__title">Remove the authenticator from Steam</span>
+              <span class="choice__text">Uses the revocation code. The account goes back to email codes.</span>
+            </button>
+          </div>
+          <div class="modal__actions">
+            <button class="btn btn--sm" data-close>Close</button>
+          </div>
+        </div>
+      </dialog>
+
+      <!-- ------------------------------------------------------- settings -->
+      <dialog class="modal modal--wide" id="settings-dialog">
+        <div class="modal__body">
+          <h2 class="modal__title">Settings</h2>
+
+          <div class="setting">
+            <label class="check">
+              <input type="checkbox" id="set-autocheck" />
+              <span>Check Steam for new confirmations while the app is open</span>
+            </label>
+            <label class="field field--inline">
+              <span class="field__label">Every</span>
+              <input class="field__input field__input--num" id="set-interval" type="number" min="10" max="600" />
+              <span class="field__suffix">seconds</span>
+            </label>
+          </div>
+
+          <div class="setting">
+            <label class="check">
+              <input type="checkbox" id="set-notify" />
+              <span>Show a desktop notification when something arrives</span>
+            </label>
+            <label class="field field--inline">
+              <span class="field__label">Lock after</span>
+              <input class="field__input field__input--num" id="set-idle" type="number" min="0" max="1440" />
+              <span class="field__suffix">idle minutes, 0 to never</span>
+            </label>
+          </div>
+
+          <hr class="rule" />
+
+          <h3 class="setting__heading">Answer confirmations automatically</h3>
+          <p class="modal__text">
+            A stolen API key empties an inventory in minutes when a tool approves everything it
+            sees. These rules put a ceiling on that.
+          </p>
+
+          <div class="setting">
+            <label class="check">
+              <input type="checkbox" id="set-auto-enabled" />
+              <span>Approve matching confirmations without asking</span>
+            </label>
+            <label class="check">
+              <input type="checkbox" id="set-auto-market" />
+              <span>Market listings you created</span>
+            </label>
+            <label class="check">
+              <input type="checkbox" id="set-auto-trades" />
+              <span class="check__danger">Trades, from the partners listed below only</span>
+            </label>
+            <label class="field">
+              <span class="field__label">Trade partners allowed, one per line</span>
+              <textarea class="field__input field__input--area" id="set-auto-partners" rows="3"
+                spellcheck="false" placeholder="kopke_trades"></textarea>
+            </label>
+            <div class="setting__row">
+              <label class="field field--inline">
+                <span class="field__label">Stop after</span>
+                <input class="field__input field__input--num" id="set-auto-max" type="number" min="1" max="500" />
+                <span class="field__suffix">an hour</span>
+              </label>
+              <label class="field field--inline">
+                <span class="field__label">Wait</span>
+                <input class="field__input field__input--num" id="set-auto-hold" type="number" min="0" max="600" />
+                <span class="field__suffix">seconds first</span>
+              </label>
+            </div>
+          </div>
+
+          <p class="gate__error" id="settings-error" role="alert" hidden></p>
+          <div class="modal__actions">
+            <button class="btn btn--sm" data-close>Cancel</button>
+            <button class="btn btn--primary btn--sm" id="settings-save">Save</button>
+          </div>
+        </div>
+      </dialog>
+
+      <!-- --------------------------------------------------------- prompt -->
+      <dialog class="modal" id="prompt-dialog">
+        <form method="dialog" class="modal__body">
+          <h2 class="modal__title" id="prompt-title"></h2>
+          <p class="modal__text" id="prompt-text"></p>
+          <label class="field" id="prompt-field">
+            <span class="field__label" id="prompt-label"></span>
+            <input class="field__input" id="prompt-input" spellcheck="false" />
+          </label>
+          <div class="revocation" id="prompt-reveal" hidden></div>
+          <div class="modal__actions">
+            <button class="btn btn--sm" value="cancel">Cancel</button>
+            <button class="btn btn--primary btn--sm" value="go" id="prompt-go">OK</button>
+          </div>
+        </form>
+      </dialog>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

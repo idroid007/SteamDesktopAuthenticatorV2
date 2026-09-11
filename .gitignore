@@ -1,0 +1,25 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.DS_Store
+*.log
+.env
+.env.*
+out/
+release/
+coverage/
+
+# never commit real secrets
+*.maFile
+maFiles/
+vault.json
+*.sda-vault
+
+# generated at release time
+packages/*/SHA256SUMS
+
+# not published to GitHub
+docs/
+plans/
+*.plan.md
+.env*

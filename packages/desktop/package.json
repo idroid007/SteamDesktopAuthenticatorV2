@@ -1,0 +1,125 @@
+{
+  "name": "@sda/desktop",
+  "version": "2.0.0-alpha.1",
+  "description": "Desktop app for Steam Desktop Authenticator V2. Windows, macOS and Linux.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node -e \"require('fs').copyFileSync('src/preload.cjs','dist/preload.cjs')\"",
+    "dev": "npm run build && electron dist/main.js",
+    "package": "node ../../scripts/make-icon.mjs && node ../../scripts/stage-desktop.mjs && electron-builder"
+  },
+  "dependencies": {
+    "@sda/cli": "2.0.0-alpha.1"
+  },
+  "devDependencies": {
+    "electron": "33.4.11",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "club.nohax.sda2",
+    "productName": "Steam Desktop Authenticator",
+    "copyright": "MIT. Copyright (c) 2026 Ishu Sharma",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*",
+      "!**/*.map",
+      "!**/*.ts"
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Steam Desktop Authenticator",
+      "uninstallDisplayName": "Steam Desktop Authenticator V2",
+      "artifactName": "SteamDesktopAuthenticator-${version}-setup.${ext}"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "public.app-category.utilities"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "Utility",
+      "maintainer": "Ishu Sharma <ishubot@gmail.com>"
+    },
+    "electronVersion": "33.4.11",
+    "portable": {
+      "artifactName": "SteamDesktopAuthenticator-${version}-portable.${ext}",
+      "unicode": true
+    },
+    "zip": {
+      "artifactName": "SteamDesktopAuthenticator-${version}-win-x64.${ext}"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/idroid007/SteamDesktopAuthenticatorV2.git",
+    "directory": "packages/desktop"
+  },
+  "author": {
+    "name": "Ishu Sharma",
+    "url": "https://nohax.club"
+  }
+}

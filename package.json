@@ -1,0 +1,36 @@
+{
+  "name": "SteamDesktopAuthenticatorV2",
+  "version": "2.0.0-alpha.1",
+  "private": true,
+  "description": "Steam Guard codes and trade confirmations on your desktop. Your secrets stay on your machine.",
+  "license": "MIT",
+  "author": "Ishu Sharma (https://nohax.club)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/idroid007/SteamDesktopAuthenticatorV2.git"
+  },
+  "homepage": "https://nohax.club",
+  "workspaces": [
+    "packages/core",
+    "packages/ui",
+    "packages/cli",
+    "packages/desktop"
+  ],
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "build": "npm run build -w @sda/core && npm run build -w @sda/ui && npm run build -w @sda/cli && npm run build -w @sda/desktop",
+    "test": "npm run test -w @sda/core",
+    "typecheck": "tsc -b --pretty",
+    "cli": "node packages/cli/dist/bin.js",
+    "desktop": "npm run dev -w @sda/desktop",
+    "serve": "node packages/cli/dist/bin.js serve",
+    "build:preview": "node scripts/build-preview.mjs",
+    "checksums": "node scripts/write-checksums.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}

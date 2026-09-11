@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: ['20.11', '22', '24']
+
+    steps:
+      # Actions are pinned by commit SHA. A tag can be moved to point at other
+      # code; a SHA cannot.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build -w @sda/core && npm run build -w @sda/ui && npm run build -w @sda/cli
+
+      - name: Test
+        run: npm test
+
+      - name: Check the CLI starts
+        run: node packages/cli/dist/bin.js --version
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
+
+      # The whole security pitch rests on this staying at zero. Fail loudly if a
+      # runtime dependency ever appears in the core package.
+      - name: The core must have no runtime dependencies
+        run: |
+          deps=$(node -p "Object.keys(require('./packages/core/package.json').dependencies ?? {}).length")
+          echo "core runtime dependencies: $deps"
+          if [ "$deps" != "0" ]; then
+            echo "::error::@sda/core gained a runtime dependency. That is the one thing it may not do."
+            exit 1
+          fi

@@ -47,7 +47,14 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends fakeroot libarchive-tools
 
       - name: Package the desktop app
-        run: npm run package -w @sda/desktop
+        id: package
+        # Keep the output. When a target fails, this log is the only thing that
+        # says why, and job logs need repository access to read.
+        run: |
+          set -o pipefail
+          npm run package -w @sda/desktop 2>&1 | tee packaging-${{ matrix.os }}.log
+        shell: bash
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # No signing certificate, so do not go looking for one.
@@ -57,14 +64,25 @@ jobs:
           APPIMAGE_EXTRACT_AND_RUN: 1
           DEBUG: ${{ runner.os == 'Linux' && 'electron-builder' || '' }}
 
-      # The log above is the only place a packaging failure explains itself, so
-      # surface the tail where someone reading the run can find it.
-      - name: Why packaging failed
-        if: failure()
-        run: |
-          echo "### Packaging failed on ${{ matrix.os }}" >> $GITHUB_STEP_SUMMARY
-          ls -la packages/desktop/release 2>/dev/null || echo "no release directory" >> $GITHUB_STEP_SUMMARY
+      # A failed target should not cost the other targets their upload, and the
+      # log gets attached either way so a failure can be read without needing
+      # access to the run.
+      - name: Report what was built
+        if: always()
         shell: bash
+        run: |
+          {
+            echo "### ${{ matrix.os }}"
+            echo '```'
+            ls -la packages/desktop/release 2>/dev/null || echo "no release directory"
+            echo '```'
+            echo "<details><summary>Packaging log tail</summary>"
+            echo '```'
+            tail -n 60 packaging-${{ matrix.os }}.log 2>/dev/null || echo "no log"
+            echo '```'
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
+          cp packaging-${{ matrix.os }}.log packages/desktop/release/ 2>/dev/null || true
 
       - name: Checksums for every artifact
         shell: bash
@@ -90,6 +108,7 @@ jobs:
             packages/desktop/release/*.tar.gz
             packages/desktop/release/*.zip
             packages/desktop/release/SHA256SUMS-*.txt
+            packages/desktop/release/packaging-*.log
 
   npm:
     name: Publish to npm
